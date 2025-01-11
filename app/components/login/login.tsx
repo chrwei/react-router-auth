@@ -1,10 +1,43 @@
 import { useState } from 'react';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import styles from './login.module.css';
-import { useNavigate } from 'react-router';
+import { data, redirect, useNavigate } from 'react-router';
 import fbAuth from '~/firebase/firebaseConfig';
+import type { Route } from "./+types/login";
 
-export function Login() {
+import {
+  getSession,
+  commitSession,
+} from "~/sessions.server";
+
+export async function loader({
+  request,
+}: Route.LoaderArgs) {
+  const session = await getSession(
+    request.headers.get("Cookie")
+  );
+
+  console.log("session", session);
+
+  if (session.has("userId")) {
+    // Redirect to the home page if they are already signed in.
+    return redirect("/");
+  }
+
+  return data(
+    { seserror: session.get("error") },
+    {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    }
+  );
+}
+
+export function Login({
+  loaderData,
+}: Route.ComponentProps) {
+  const { seserror } = loaderData;
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -37,7 +70,8 @@ export function Login() {
         </svg>
         Continue with Google
       </button>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {error && <p className="text-red-500 mt-2">Google Error:{error}</p>}
+      {seserror && <p className="text-red-500 mt-2">Session Error: {seserror}</p>}
     </div>
   );
 }
