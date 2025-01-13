@@ -7,11 +7,8 @@ export default function Logout() {
 
   const handleLogout = async () => {
     try {
-      console.log("signing out");
-      await fbAuth.signOut(); //effect in logged-wrapper handles the navigation
-      console.log("set user null");
+      await fbAuth.signOut(); //effect in logged-wrapper handles the navigation and session
       setUser(null);
-      console.log("signed out");
     } catch (error) {
       console.error('Error logging out:', error);
     }

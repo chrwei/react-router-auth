@@ -41,12 +41,16 @@ export async function action({
   const session = await getSession(
     request.headers.get("Cookie")
   );
-  session.set("user", {
-    uid: "",
-    displayName: null,
-    email: null,
-  } as AuthUser);
-
+  const form = await request.formData();
+  
+  if(form.get("action") == "logout") {
+    session.set("user", {
+      uid: "",
+      displayName: null,
+      email: null,
+    } as AuthUser);
+  
+    }
   // send them to the home page.
   return redirect("/", {
     headers: {

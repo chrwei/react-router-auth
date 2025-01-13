@@ -17,21 +17,15 @@ export default function LoggedWrapper({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = fbAuth.onAuthStateChanged((newuser) => {
-      console.log("auth state", newuser);
       if (!newuser) {
-        console.log("submiting logout");
         const f = new FormData();
-        f.append("uid", "");
-        f.append("displayName", "");
-        f.append("email", "");
+        f.append("action", "logout");
         fetcher.submit(f, { method: 'POST'});
       }
     });
 
-    console.log("making auth change");
-
     return () => unsubscribe();
-  }, [fetcher, FormData]);
+  }, []);
 
   return (
     <AuthProvider>

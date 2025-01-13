@@ -14,8 +14,6 @@ export async function loader({ request }: Route.LoaderArgs) {
     request.headers.get("Cookie")
   );
 
-  console.log("session has user", (session.has("user") && session.get("user")?.uid));
-
   if (session.has("user") && session.get("user")?.uid) {
     // Redirect to the home page if they are already signed in.
     return redirect("/dashboard");
@@ -38,15 +36,18 @@ export async function action({
     request.headers.get("Cookie")
   );
   const form = await request.formData();
-  const user: AuthUser = {
-    uid: form.get("displayName")?.toString() || "",
-    displayName: form.get("displayName")?.toString() || null,
-    email: form.get("displayName")?.toString() || null,
-  };
 
-  session.set("user", user);
+  if(form.get("action") == "login") {
+    const user: AuthUser = {
+      uid: form.get("displayName")?.toString() || "",
+      displayName: form.get("displayName")?.toString() || null,
+      email: form.get("displayName")?.toString() || null,
+    };
 
-  // Login succeeded, send them to the home page.
+    session.set("user", user);
+  }
+
+  //send them to the dashboard.
   return redirect("/dashboard", {
     headers: {
       "Set-Cookie": await commitSession(session),
@@ -61,6 +62,7 @@ export default function Home({
 
   function saveLogin(user: AuthUser){
     const f = new FormData();
+    f.append("action", "login");
     f.append("uid", user.uid);
     f.append("displayName", user.displayName || "");
     f.append("email", user.email || "");
