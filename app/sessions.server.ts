@@ -1,7 +1,8 @@
 import { createCookieSessionStorage } from "react-router";
+import AuthUser from "./types/authUser";
 
 type SessionData = {
-  userId: string;
+  user: AuthUser;
 };
 
 type SessionFlashData = {

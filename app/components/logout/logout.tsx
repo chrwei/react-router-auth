@@ -1,17 +1,17 @@
 import styles from './logout.module.css';
-import { useNavigate } from 'react-router';
 import { useAuth } from '~/contexts/auth/useAuth';
 import fbAuth from '~/firebase/firebaseConfig';
 
 export default function Logout() {
-  const navigate = useNavigate();
   const { user, setUser } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await fbAuth.signOut();
+      console.log("signing out");
+      await fbAuth.signOut(); //effect in logged-wrapper handles the navigation
+      console.log("set user null");
       setUser(null);
-      navigate('/');
+      console.log("signed out");
     } catch (error) {
       console.error('Error logging out:', error);
     }

@@ -1,7 +1,9 @@
-interface AuthUser {
+export default interface AuthUser {
+    uid: string;
     displayName: string | null;
     email: string | null;
-    uid: string;
 }
 
-export default AuthUser;
+export interface actionProps {
+    action: (user: AuthUser)=>void
+}

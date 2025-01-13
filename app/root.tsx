@@ -3,6 +3,7 @@ import {
   Links,
   Meta,
   Outlet,
+  redirect,
   Scripts,
   ScrollRestoration,
 } from "react-router";
@@ -10,6 +11,12 @@ import '~/firebase/firebaseConfig';
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
 import tailwindStylesheet from "./tailwind.css?url";
+
+import {
+  getSession,
+  commitSession,
+} from "~/sessions.server";
+import AuthUser from '~/types/authUser';
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -25,6 +32,28 @@ export const links: Route.LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
   { rel: "stylesheet", href: tailwindStylesheet }
 ];
+
+
+//logout action 
+export async function action({
+  request,
+}: Route.ActionArgs) {
+  const session = await getSession(
+    request.headers.get("Cookie")
+  );
+  session.set("user", {
+    uid: "",
+    displayName: null,
+    email: null,
+  } as AuthUser);
+
+  // send them to the home page.
+  return redirect("/", {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  });
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,17 +1,11 @@
 import { useEffect, ReactNode } from 'react';
-import { Outlet, redirect, useNavigate } from 'react-router';
+import { Outlet, redirect, useFetcher } from 'react-router';
 import { isAuth } from '~/services/auth';
 import Logout from './logout/logout';
 import AuthProvider from '~/contexts/auth/authProvider';
 import fbAuth from '~/firebase/firebaseConfig';
 
 export async function clientLoader() {
-  // mock slow response from firebase
-  await new Promise((resolve) =>
-    setTimeout(() => {
-      resolve(undefined);
-    }, 2000)
-  );
   const isLogged = await isAuth();
   if (!isLogged) {
     throw redirect('/');
@@ -19,17 +13,25 @@ export async function clientLoader() {
 }
 
 export default function LoggedWrapper({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
+  const fetcher = useFetcher();
 
   useEffect(() => {
-    const unsubscribe = fbAuth.onAuthStateChanged((user) => {
-      if (!user) {
-        navigate('/');
+    const unsubscribe = fbAuth.onAuthStateChanged((newuser) => {
+      console.log("auth state", newuser);
+      if (!newuser) {
+        console.log("submiting logout");
+        const f = new FormData();
+        f.append("uid", "");
+        f.append("displayName", "");
+        f.append("email", "");
+        fetcher.submit(f, { method: 'POST'});
       }
     });
 
+    console.log("making auth change");
+
     return () => unsubscribe();
-  }, [navigate]);
+  }, [fetcher, FormData]);
 
   return (
     <AuthProvider>

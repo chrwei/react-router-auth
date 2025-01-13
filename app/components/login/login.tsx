@@ -1,51 +1,22 @@
 import { useState } from 'react';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import styles from './login.module.css';
-import { data, redirect, useNavigate } from 'react-router';
 import fbAuth from '~/firebase/firebaseConfig';
-import type { Route } from "./+types/login";
+import { actionProps } from '~/types/authUser';
 
-import {
-  getSession,
-  commitSession,
-} from "~/sessions.server";
 
-export async function loader({
-  request,
-}: Route.LoaderArgs) {
-  const session = await getSession(
-    request.headers.get("Cookie")
-  );
-
-  console.log("session", session);
-
-  if (session.has("userId")) {
-    // Redirect to the home page if they are already signed in.
-    return redirect("/");
-  }
-
-  return data(
-    { seserror: session.get("error") },
-    {
-      headers: {
-        "Set-Cookie": await commitSession(session),
-      },
-    }
-  );
-}
-
-export function Login({
-  loaderData,
-}: Route.ComponentProps) {
-  const { seserror } = loaderData;
+export function Login({action} : actionProps) {
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(fbAuth, provider);
-      navigate('/dashboard');
+      action({
+        uid: fbAuth.currentUser?.uid || "",
+        displayName: fbAuth.currentUser?.displayName || null,
+        email: fbAuth.currentUser?.email || null,
+      });
     } catch (err) {
       setError('Failed to login. Please try again.');
       console.error('Login error:', err);
@@ -71,7 +42,7 @@ export function Login({
         Continue with Google
       </button>
       {error && <p className="text-red-500 mt-2">Google Error:{error}</p>}
-      {seserror && <p className="text-red-500 mt-2">Session Error: {seserror}</p>}
     </div>
   );
+
 }
